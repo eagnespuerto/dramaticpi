@@ -1,0 +1,25 @@
+[project]
+name = "piscript"
+version = "0.1.0"
+description = "Lightweight scriptwriting for stage and screen on Raspberry Pi"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = [
+    "PyQt5>=5.15",
+    "reportlab>=3.6",
+]
+
+[project.scripts]
+piscript = "piscript.app:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["piscript*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
