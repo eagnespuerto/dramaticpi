@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=piscript
+Comment=Lightweight scriptwriting for stage and screen
+Exec=@BIN@
+Icon=text-editor
+Terminal=false
+Categories=Office;WordProcessor;
+MimeType=application/x-piscript;
