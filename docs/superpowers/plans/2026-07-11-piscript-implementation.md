@@ -2784,10 +2784,332 @@ git tag -a v0.1.0 -m "piscript v0.1.0"
 
 ---
 
+## Task 17: Rename `piscript` → `DramaticPi`, `.piscript` → `.dramapi`
+
+**Files:** all of them.
+
+The name conventions after this task:
+- **Python package** (lowercase, PEP 8): `dramaticpi`
+- **Display name** (README, UI titles, `.desktop` `Name=`): `DramaticPi`
+- **Executable / launcher**: `dramaticpi`
+- **File extension**: `.dramapi`
+- **MIME type**: `application/x-dramapi`
+
+- [ ] **Step 1: Rename the package directory (preserves git history)**
+
+```bash
+git mv piscript dramaticpi
+```
+
+- [ ] **Step 2: Rewrite Python imports in all `.py` files**
+
+Run from the repo root (Git Bash):
+
+```bash
+# Rewrite all `from piscript...` and `import piscript...` references.
+grep -rl --include='*.py' -E '(^|[^A-Za-z0-9_])piscript([^A-Za-z0-9_]|$)' dramaticpi tests | \
+  xargs sed -i -E 's/(^|[^A-Za-z0-9_])piscript([^A-Za-z0-9_]|$)/\1dramaticpi\2/g'
+```
+
+Expected changes: every `from piscript.model import ...`, `from piscript.layout import ...`, etc. → `from dramaticpi....`, plus `from tests.fixtures` stays as-is (that path didn't contain `piscript`).
+
+- [ ] **Step 3: Update `pyproject.toml`**
+
+Replace the file with:
+
+```toml
+[project]
+name = "dramaticpi"
+version = "0.1.0"
+description = "Lightweight scriptwriting for stage and screen on Raspberry Pi"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = [
+    "PyQt5>=5.15",
+    "reportlab>=3.6",
+]
+
+[project.scripts]
+dramaticpi = "dramaticpi.app:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["dramaticpi*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+```
+
+- [ ] **Step 4: Update `dramaticpi/__init__.py` docstring**
+
+Replace with:
+
+```python
+"""DramaticPi — lightweight scriptwriting for stage and screen."""
+
+__version__ = "0.1.0"
+```
+
+- [ ] **Step 5: Update file extension and app name in Qt code**
+
+Replace occurrences in `dramaticpi/mainwindow.py` and `dramaticpi/app.py`:
+
+- Window title `"piscript"` → `"DramaticPi"`
+- `QApplication` name/org `"piscript"` → `"dramaticpi"`
+- File-dialog filters `"piscript files (*.piscript)"` → `"DramaticPi files (*.dramapi)"`
+- Default filenames `"untitled.piscript"` → `"untitled.dramapi"`, `"script.pdf/html/fountain"` unchanged
+- Extension check `path.endswith(".piscript")` → `path.endswith(".dramapi")`
+- `QMessageBox` title strings `"piscript"` → `"DramaticPi"`
+- `_update_title` prefix `"piscript — "` → `"DramaticPi — "`
+- About dialog body: replace `piscript` with `DramaticPi` in prose.
+
+A single sed pass covers most of this:
+
+```bash
+sed -i \
+  -e 's|"piscript"|"DramaticPi"|g' \
+  -e 's|\.piscript|.dramapi|g' \
+  -e 's|piscript files|DramaticPi files|g' \
+  -e 's|piscript — |DramaticPi — |g' \
+  -e 's|piscript\\n|DramaticPi\\n|g' \
+  dramaticpi/mainwindow.py dramaticpi/app.py
+```
+
+Then hand-verify: open both files, ensure `setApplicationName` still passes `"dramaticpi"` (lowercase) — sed above turned it into `"DramaticPi"`. Fix:
+
+```bash
+sed -i 's|setApplicationName("DramaticPi")|setApplicationName("dramaticpi")|; s|setOrganizationName("DramaticPi")|setOrganizationName("dramaticpi")|' dramaticpi/app.py
+```
+
+- [ ] **Step 6: Update model tests and any fixtures that use the extension**
+
+```bash
+sed -i 's|\.piscript|.dramapi|g' tests/test_model.py tests/fixtures/__init__.py
+```
+
+Then hand-verify test docstrings still read sensibly.
+
+- [ ] **Step 7: Rename the `.desktop` file and update its contents**
+
+```bash
+git mv piscript.desktop dramaticpi.desktop
+```
+
+Replace `dramaticpi.desktop` contents with:
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=DramaticPi
+Comment=Lightweight scriptwriting for stage and screen
+Exec=@BIN@
+Icon=text-editor
+Terminal=false
+Categories=Office;WordProcessor;
+MimeType=application/x-dramapi;
+```
+
+- [ ] **Step 8: Update `install.sh`**
+
+Replace with:
+
+```bash
+#!/usr/bin/env bash
+# Installs DramaticPi for the current user on Raspberry Pi OS (Bullseye+).
+
+set -euo pipefail
+
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+PREFIX="${HOME}/.local"
+LIB_DIR="${PREFIX}/lib/dramaticpi"
+BIN="${PREFIX}/bin/dramaticpi"
+DESKTOP="${PREFIX}/share/applications/dramaticpi.desktop"
+
+echo "==> Checking apt dependencies…"
+NEEDS=()
+dpkg -s python3-pyqt5     >/dev/null 2>&1 || NEEDS+=("python3-pyqt5")
+dpkg -s python3-reportlab >/dev/null 2>&1 || NEEDS+=("python3-reportlab")
+if [ ${#NEEDS[@]} -gt 0 ]; then
+    echo "    installing: ${NEEDS[*]}"
+    sudo apt-get update
+    sudo apt-get install -y "${NEEDS[@]}"
+fi
+
+echo "==> Copying package to ${LIB_DIR}"
+mkdir -p "${LIB_DIR}"
+rm -rf "${LIB_DIR}/dramaticpi"
+cp -r "${REPO_DIR}/dramaticpi" "${LIB_DIR}/dramaticpi"
+
+echo "==> Installing launcher: ${BIN}"
+mkdir -p "$(dirname "${BIN}")"
+cat > "${BIN}" <<EOF
+#!/usr/bin/env bash
+export PYTHONPATH="${LIB_DIR}:\${PYTHONPATH:-}"
+exec python3 -m dramaticpi "\$@"
+EOF
+chmod +x "${BIN}"
+
+echo "==> Installing desktop entry: ${DESKTOP}"
+mkdir -p "$(dirname "${DESKTOP}")"
+cp "${REPO_DIR}/dramaticpi.desktop" "${DESKTOP}"
+sed -i "s|@BIN@|${BIN}|g" "${DESKTOP}"
+
+echo "==> Done. Launch from your applications menu or run: dramaticpi"
+```
+
+- [ ] **Step 9: Update `uninstall.sh`**
+
+Replace with:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+PREFIX="${HOME}/.local"
+rm -rf "${PREFIX}/lib/dramaticpi"
+rm -f  "${PREFIX}/bin/dramaticpi"
+rm -f  "${PREFIX}/share/applications/dramaticpi.desktop"
+echo "DramaticPi uninstalled. apt packages (python3-pyqt5, python3-reportlab) were left in place."
+```
+
+- [ ] **Step 10: Rewrite `README.md`**
+
+```markdown
+# DramaticPi
+
+A lightweight word processor for stage plays and screenplays. Renders industry-standard layouts (WGA screenplay, Dramatists Guild stage) as you type. Runs on Raspberry Pi Zero W upward on Raspberry Pi OS (Bullseye or newer).
+
+Python 3 + PyQt5 + ReportLab. Modelled aesthetically on Zim: thin single toolbar, side outline, main text area, status bar.
+
+## Install
+
+```bash
+git clone https://github.com/<you>/dramaticpi.git
+cd dramaticpi
+./install.sh
+```
+
+Adds:
+
+- `python3-pyqt5` and `python3-reportlab` via apt (skipped if already present)
+- `~/.local/lib/dramaticpi` — the package
+- `~/.local/bin/dramaticpi` — the launcher
+- Menu entry under Office / Word Processor
+
+## Use
+
+Launch from the Applications menu, or run `dramaticpi`.
+
+Scripts save with the `.dramapi` extension.
+
+**Keyboard:**
+
+- **Enter** — advance to the logical next element (`CHARACTER → DIALOGUE`, etc.)
+- **Tab** — cycle the current line's element type
+- **Ctrl+1..6** — set the element type directly
+- **Ctrl+N** — new screenplay · **Ctrl+O** — open · **Ctrl+S** — save · **Ctrl+F** — find
+
+**Modes:** File → New Screenplay / New Stage Play. Each document remembers its mode.
+
+**Export:** File → Export → PDF / HTML / Fountain. Fountain export from stage mode is lossy (stage-only elements survive as notes) — a dialog explains before writing.
+
+## Uninstall
+
+```bash
+./uninstall.sh
+```
+
+## Layout standards
+
+- **Screenplay**: US Letter, Courier 12pt, margins L 1.5" / R 1.0" / T 1.0" / B 1.0". Elements follow WGA style-sheet indents.
+- **Stage play**: US Letter, Courier 12pt, margins 1.0" on all sides. Character names centered above dialogue, stage directions indented 3.0" and italicised.
+
+Exact numbers live in [`dramaticpi/layout.py`](dramaticpi/layout.py) — the single source of truth for the editor, PDF export, and HTML export.
+
+## Requirements
+
+- Raspberry Pi OS Bullseye or newer (32-bit or 64-bit)
+- X11 or Wayland session
+- Python 3.9+, `python3-pyqt5`, `python3-reportlab`
+
+Tested target: Pi Zero W (ARMv6) through Pi 5.
+
+## Development
+
+```bash
+pip install PyQt5 reportlab pytest
+pytest
+```
+
+Pure-Python modules (`model`, `layout`, `rules`, `fountain`, `pdf`, `html`) have full unit-test coverage. Qt widgets (`editor`, `outline`, `mainwindow`, `app`) are validated manually — the spec skips GUI automation.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+```
+
+- [ ] **Step 11: Sweep for any remaining `piscript` references**
+
+```bash
+grep -rn --exclude-dir=.git --exclude-dir=docs 'piscript\|\.piscript' .
+```
+
+Expected: no matches, except perhaps historical references inside `docs/superpowers/` (spec and plan) — those are frozen historical artifacts and should NOT be edited. Every other match must be resolved.
+
+- [ ] **Step 12: Run the full test suite**
+
+```bash
+pytest -q
+```
+
+Expected: all tests pass with the new package name.
+
+- [ ] **Step 13: Manual smoke — launch under the new name**
+
+```bash
+python -m dramaticpi
+```
+
+Expected: window title reads "DramaticPi — Untitled". File → Save as offers `untitled.dramapi`. Save, then File → Open shows a `.dramapi` filter. Reopening the saved file restores the document.
+
+- [ ] **Step 14: Retag**
+
+```bash
+git tag -d v0.1.0 2>/dev/null || true
+```
+
+- [ ] **Step 15: Commit and tag**
+
+```bash
+git add -A
+git commit -m "chore: rename piscript → DramaticPi, .piscript → .dramapi"
+git tag -a v0.1.0 -m "DramaticPi v0.1.0"
+```
+
+- [ ] **Step 16: Rename the repo folder itself (optional, local only)**
+
+If the working directory is named `piscript/`:
+
+```bash
+cd ..
+mv piscript dramaticpi
+cd dramaticpi
+```
+
+The GitHub repo rename (if any) is out of scope for this task — do it via the web UI when publishing.
+
+---
+
 ## Wrap-up checklist
 
-- [ ] All pure-Python tests pass (`pytest -q`).
-- [ ] `python -m piscript` launches on Windows dev machine.
-- [ ] Manual test on a Pi Zero W: type a page in each mode, save, reopen, export PDF, export HTML, import Fountain, export Fountain.
+- [ ] All pure-Python tests pass (`pytest -q`) under the new `dramaticpi` package name.
+- [ ] `python -m dramaticpi` launches on Windows dev machine.
+- [ ] Manual test on a Pi Zero W: type a page in each mode, save as `.dramapi`, reopen, export PDF, export HTML, import Fountain, export Fountain.
 - [ ] `install.sh` and `uninstall.sh` are idempotent (running twice is safe).
+- [ ] No stray `piscript` or `.piscript` references outside the frozen `docs/superpowers/` history.
 - [ ] Spec §11 out-of-scope items truly aren't in the code.
