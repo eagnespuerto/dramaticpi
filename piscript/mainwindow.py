@@ -145,10 +145,101 @@ class MainWindow(QMainWindow):
         dirty = " •" if self._dirty else ""
         self.setWindowTitle(f"piscript — {name}{dirty}")
 
-    def _open(self): ...
-    def _save(self): return True
-    def _save_as(self): ...
-    def _import_fountain(self): ...
+    def _open(self):
+        if not self._confirm_discard():
+            return
+        from PyQt5.QtWidgets import QFileDialog
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Open .piscript", "", "piscript files (*.piscript);;All files (*)"
+        )
+        if not path:
+            return
+        from . import model as _model
+        try:
+            result = _model.load(path)
+        except _model.UnsupportedVersionError as e:
+            QMessageBox.warning(
+                self, "piscript",
+                f"{e}\n\nThe file will be opened read-only as plain text."
+            )
+            return
+        except _model.DocumentError as e:
+            QMessageBox.critical(self, "piscript", f"Could not open file:\n{e}")
+            return
+        self._doc = result.document
+        self._current_path = path
+        self._editor.set_mode(self._doc.mode)
+        self._editor.load_document(self._doc)
+        self._refresh_element_combo()
+        self._outline.rebuild(self._current_doc())
+        self._dirty = False
+        self._update_title()
+        if result.warnings:
+            QMessageBox.information(
+                self, "piscript",
+                "Opened with warnings:\n\n" + "\n".join(result.warnings)
+            )
+
+    def _save(self) -> bool:
+        if not self._current_path:
+            return self._save_as()
+        return self._write_to(self._current_path)
+
+    def _save_as(self) -> bool:
+        from PyQt5.QtWidgets import QFileDialog
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save as", self._current_path or "untitled.piscript",
+            "piscript files (*.piscript)"
+        )
+        if not path:
+            return False
+        if not path.endswith(".piscript"):
+            path += ".piscript"
+        return self._write_to(path)
+
+    def _write_to(self, path: str) -> bool:
+        from . import model as _model
+        try:
+            _model.save(self._current_doc(), path)
+        except OSError as e:
+            QMessageBox.critical(self, "piscript", f"Could not save:\n{e}")
+            return False
+        self._current_path = path
+        self._dirty = False
+        self._update_title()
+        return True
+
+    def _import_fountain(self):
+        if not self._confirm_discard():
+            return
+        from PyQt5.QtWidgets import QFileDialog
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Import Fountain", "", "Fountain files (*.fountain);;All files (*)"
+        )
+        if not path:
+            return
+        from . import fountain as _f
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                src = f.read()
+        except OSError as e:
+            QMessageBox.critical(self, "piscript", f"Could not read:\n{e}")
+            return
+        result = _f.parse_fountain(src)
+        self._doc = result.document
+        self._current_path = None
+        self._editor.set_mode(self._doc.mode)
+        self._editor.load_document(self._doc)
+        self._refresh_element_combo()
+        self._outline.rebuild(self._current_doc())
+        self._dirty = True
+        self._update_title()
+        if result.warnings:
+            QMessageBox.information(
+                self, "piscript",
+                "Imported with warnings:\n\n" + "\n".join(result.warnings)
+            )
+
     def _export_pdf(self): ...
     def _export_html(self): ...
     def _export_fountain(self): ...
