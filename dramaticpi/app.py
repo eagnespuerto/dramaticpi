@@ -12,8 +12,8 @@ from .mainwindow import MainWindow
 def main(argv: list[str] | None = None) -> int:
     argv = argv if argv is not None else sys.argv
     app = QApplication(argv)
-    app.setApplicationName("piscript")
-    app.setOrganizationName("piscript")
+    app.setApplicationName("dramaticpi")
+    app.setOrganizationName("dramaticpi")
     win = MainWindow()
     win.show()
     return app.exec_()

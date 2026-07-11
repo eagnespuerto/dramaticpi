@@ -1,4 +1,4 @@
-"""Document, Block, and enums for piscript."""
+"""Document, Block, and enums for DramaticPi."""
 
 from __future__ import annotations
 
@@ -43,11 +43,11 @@ class Document:
 
 
 class DocumentError(Exception):
-    """Raised when a .piscript file cannot be loaded."""
+    """Raised when a .dramapi file cannot be loaded."""
 
 
 class UnsupportedVersionError(DocumentError):
-    """Raised when the file was written by a newer piscript."""
+    """Raised when the file was written by a newer DramaticPi."""
 
 
 CURRENT_VERSION = 1
@@ -67,7 +67,7 @@ def from_dict(raw: dict) -> LoadResult:
         raise DocumentError("version must be an integer")
     if version > CURRENT_VERSION:
         raise UnsupportedVersionError(
-            f"file was written by a newer piscript (version {version})"
+            f"file was written by a newer DramaticPi (version {version})"
         )
 
     mode_raw = raw.get("mode", Mode.SCREENPLAY.value)

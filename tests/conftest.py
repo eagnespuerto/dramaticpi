@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for piscript tests."""
+"""Shared pytest fixtures for DramaticPi tests."""
 
 import sys
 from pathlib import Path

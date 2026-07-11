@@ -1,7 +1,7 @@
 import pytest
 
-from piscript.model import ElementType as E, Mode
-from piscript.rules import (
+from dramaticpi.model import ElementType as E, Mode
+from dramaticpi.rules import (
     apply_heuristics, cycle_next, next_element,
     screenplay_tab_cycle, stage_tab_cycle,
 )

@@ -1,8 +1,8 @@
-from piscript.layout import (
+from dramaticpi.layout import (
     Alignment, Case, FONT_NAME, FONT_SIZE_PT, POINTS_PER_INCH,
     SCREENPLAY_PAGE, STAGE_PAGE, page_metrics, style_for,
 )
-from piscript.model import ElementType, Mode
+from dramaticpi.model import ElementType, Mode
 
 
 def test_font_is_courier_12pt():

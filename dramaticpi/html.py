@@ -24,7 +24,7 @@ def _fmt_in(n: float) -> str:
 
 def export_html(doc: Document) -> str:
     metrics = page_metrics(doc.mode)
-    title = escape(doc.title or "piscript document")
+    title = escape(doc.title or "DramaticPi document")
 
     css = _build_css(doc.mode, metrics)
     body = _build_body(doc)

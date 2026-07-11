@@ -1,6 +1,6 @@
-"""Test fixtures for piscript."""
+"""Test fixtures for DramaticPi."""
 
-from piscript.model import Block, Document, ElementType as E, Mode
+from dramaticpi.model import Block, Document, ElementType as E, Mode
 
 
 def screenplay_fixture() -> Document:

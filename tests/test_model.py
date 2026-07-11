@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from piscript.model import (
+from dramaticpi.model import (
     Block, Document, DocumentError, ElementType, LoadResult, Mode,
     UnsupportedVersionError, from_dict, load, save,
 )
@@ -93,7 +93,7 @@ def test_save_and_load_round_trip(tmp_path):
             Block(ElementType.DIALOGUE, "Nothing to be done."),
         ],
     )
-    path = tmp_path / "godot.piscript"
+    path = tmp_path / "godot.dramapi"
     save(doc, str(path))
     loaded = load(str(path)).document
     assert loaded == doc
@@ -101,7 +101,7 @@ def test_save_and_load_round_trip(tmp_path):
 
 def test_save_produces_valid_utf8_json_with_trailing_newline(tmp_path):
     doc = Document(title="Ünïcode ✓")
-    path = tmp_path / "u.piscript"
+    path = tmp_path / "u.dramapi"
     save(doc, str(path))
     raw = path.read_bytes()
     assert raw.endswith(b"\n")

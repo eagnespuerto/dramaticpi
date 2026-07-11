@@ -1,5 +1,5 @@
 [project]
-name = "piscript"
+name = "dramaticpi"
 version = "0.1.0"
 description = "Lightweight scriptwriting for stage and screen on Raspberry Pi"
 readme = "README.md"
@@ -11,14 +11,14 @@ dependencies = [
 ]
 
 [project.scripts]
-piscript = "piscript.app:main"
+dramaticpi = "dramaticpi.app:main"
 
 [build-system]
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["piscript*"]
+include = ["dramaticpi*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

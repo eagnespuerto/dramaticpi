@@ -2,7 +2,7 @@ import pytest
 
 reportlab = pytest.importorskip("reportlab")
 
-from piscript.pdf import export_pdf
+from dramaticpi.pdf import export_pdf
 from tests.fixtures import screenplay_fixture, stage_fixture
 
 
@@ -30,7 +30,7 @@ def test_export_pdf_uses_courier(tmp_path):
 
 
 def test_export_pdf_title_page_when_metadata_present(tmp_path):
-    from piscript.model import Document
+    from dramaticpi.model import Document
     out = tmp_path / "titled.pdf"
     export_pdf(
         Document(title="A Title", author="An Author",

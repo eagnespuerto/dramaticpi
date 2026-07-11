@@ -18,7 +18,7 @@ from .outline import OutlinePanel
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("piscript")
+        self.setWindowTitle("DramaticPi")
         self.resize(1000, 800)
 
         self._doc = Document()
@@ -76,7 +76,7 @@ class MainWindow(QMainWindow):
         m_view.addAction(toggle_outline)
 
         m_help = self.menuBar().addMenu("&Help")
-        m_help.addAction(self._act("&About piscript", self._about))
+        m_help.addAction(self._act("&About DramaticPi", self._about))
 
     def _build_toolbar(self) -> None:
         tb = QToolBar("Main", self)
@@ -129,7 +129,7 @@ class MainWindow(QMainWindow):
         if not self._dirty:
             return True
         r = QMessageBox.question(
-            self, "piscript",
+            self, "DramaticPi",
             "Discard unsaved changes?",
             QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
         )
@@ -143,14 +143,14 @@ class MainWindow(QMainWindow):
     def _update_title(self) -> None:
         name = self._current_path or "Untitled"
         dirty = " •" if self._dirty else ""
-        self.setWindowTitle(f"piscript — {name}{dirty}")
+        self.setWindowTitle(f"DramaticPi — {name}{dirty}")
 
     def _open(self):
         if not self._confirm_discard():
             return
         from PyQt5.QtWidgets import QFileDialog
         path, _ = QFileDialog.getOpenFileName(
-            self, "Open .piscript", "", "piscript files (*.piscript);;All files (*)"
+            self, "Open .dramapi", "", "DramaticPi files (*.dramapi);;All files (*)"
         )
         if not path:
             return
@@ -159,12 +159,12 @@ class MainWindow(QMainWindow):
             result = _model.load(path)
         except _model.UnsupportedVersionError as e:
             QMessageBox.warning(
-                self, "piscript",
+                self, "DramaticPi",
                 f"{e}\n\nThe file will be opened read-only as plain text."
             )
             return
         except _model.DocumentError as e:
-            QMessageBox.critical(self, "piscript", f"Could not open file:\n{e}")
+            QMessageBox.critical(self, "DramaticPi", f"Could not open file:\n{e}")
             return
         self._doc = result.document
         self._current_path = path
@@ -176,7 +176,7 @@ class MainWindow(QMainWindow):
         self._update_title()
         if result.warnings:
             QMessageBox.information(
-                self, "piscript",
+                self, "DramaticPi",
                 "Opened with warnings:\n\n" + "\n".join(result.warnings)
             )
 
@@ -188,13 +188,13 @@ class MainWindow(QMainWindow):
     def _save_as(self) -> bool:
         from PyQt5.QtWidgets import QFileDialog
         path, _ = QFileDialog.getSaveFileName(
-            self, "Save as", self._current_path or "untitled.piscript",
-            "piscript files (*.piscript)"
+            self, "Save as", self._current_path or "untitled.dramapi",
+            "DramaticPi files (*.dramapi)"
         )
         if not path:
             return False
-        if not path.endswith(".piscript"):
-            path += ".piscript"
+        if not path.endswith(".dramapi"):
+            path += ".dramapi"
         return self._write_to(path)
 
     def _write_to(self, path: str) -> bool:
@@ -202,7 +202,7 @@ class MainWindow(QMainWindow):
         try:
             _model.save(self._current_doc(), path)
         except OSError as e:
-            QMessageBox.critical(self, "piscript", f"Could not save:\n{e}")
+            QMessageBox.critical(self, "DramaticPi", f"Could not save:\n{e}")
             return False
         self._current_path = path
         self._dirty = False
@@ -223,7 +223,7 @@ class MainWindow(QMainWindow):
             with open(path, "r", encoding="utf-8") as f:
                 src = f.read()
         except OSError as e:
-            QMessageBox.critical(self, "piscript", f"Could not read:\n{e}")
+            QMessageBox.critical(self, "DramaticPi", f"Could not read:\n{e}")
             return
         result = _f.parse_fountain(src)
         self._doc = result.document
@@ -236,7 +236,7 @@ class MainWindow(QMainWindow):
         self._update_title()
         if result.warnings:
             QMessageBox.information(
-                self, "piscript",
+                self, "DramaticPi",
                 "Imported with warnings:\n\n" + "\n".join(result.warnings)
             )
 
@@ -251,7 +251,7 @@ class MainWindow(QMainWindow):
             from .pdf import export_pdf
         except ImportError:
             QMessageBox.warning(
-                self, "piscript",
+                self, "DramaticPi",
                 "PDF export needs ReportLab. Install with:\n"
                 "  sudo apt install python3-reportlab"
             )
@@ -259,9 +259,9 @@ class MainWindow(QMainWindow):
         try:
             export_pdf(self._current_doc(), path)
         except OSError as e:
-            QMessageBox.critical(self, "piscript", f"Could not write PDF:\n{e}")
+            QMessageBox.critical(self, "DramaticPi", f"Could not write PDF:\n{e}")
             return
-        QMessageBox.information(self, "piscript", f"Exported PDF to {path}")
+        QMessageBox.information(self, "DramaticPi", f"Exported PDF to {path}")
 
     def _export_html(self):
         from PyQt5.QtWidgets import QFileDialog
@@ -275,9 +275,9 @@ class MainWindow(QMainWindow):
             with open(path, "w", encoding="utf-8") as f:
                 f.write(export_html(self._current_doc()))
         except OSError as e:
-            QMessageBox.critical(self, "piscript", f"Could not write HTML:\n{e}")
+            QMessageBox.critical(self, "DramaticPi", f"Could not write HTML:\n{e}")
             return
-        QMessageBox.information(self, "piscript", f"Exported HTML to {path}")
+        QMessageBox.information(self, "DramaticPi", f"Exported HTML to {path}")
 
     def _export_fountain(self):
         from PyQt5.QtWidgets import QFileDialog
@@ -287,7 +287,7 @@ class MainWindow(QMainWindow):
         result = export_fountain(doc)
         if result.warnings:
             r = QMessageBox.question(
-                self, "piscript",
+                self, "DramaticPi",
                 "This export is lossy:\n\n"
                 + "\n".join(result.warnings)
                 + "\n\nContinue?",
@@ -305,14 +305,14 @@ class MainWindow(QMainWindow):
             with open(path, "w", encoding="utf-8") as f:
                 f.write(result.text)
         except OSError as e:
-            QMessageBox.critical(self, "piscript", f"Could not write Fountain:\n{e}")
+            QMessageBox.critical(self, "DramaticPi", f"Could not write Fountain:\n{e}")
             return
-        QMessageBox.information(self, "piscript", f"Exported Fountain to {path}")
+        QMessageBox.information(self, "DramaticPi", f"Exported Fountain to {path}")
 
     def _about(self):
         QMessageBox.about(
-            self, "About piscript",
-            "piscript — lightweight scriptwriting for stage and screen.\n"
+            self, "About DramaticPi",
+            "DramaticPi — lightweight scriptwriting for stage and screen.\n"
             "MIT licensed. Made for Raspberry Pi.",
         )
 

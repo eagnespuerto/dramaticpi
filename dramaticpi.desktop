@@ -1,9 +1,9 @@
 [Desktop Entry]
 Type=Application
-Name=piscript
+Name=DramaticPi
 Comment=Lightweight scriptwriting for stage and screen
 Exec=@BIN@
 Icon=text-editor
 Terminal=false
 Categories=Office;WordProcessor;
-MimeType=application/x-piscript;
+MimeType=application/x-dramapi;

@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# Installs piscript for the current user on Raspberry Pi OS (Bullseye+).
+# Installs DramaticPi for the current user on Raspberry Pi OS (Bullseye+).
 # - apt-installs python3-pyqt5 and python3-reportlab (skip if present)
-# - copies the piscript package to ~/.local/lib/piscript
-# - drops a launcher into ~/.local/bin/piscript
+# - copies the dramaticpi package to ~/.local/lib/dramaticpi
+# - drops a launcher into ~/.local/bin/dramaticpi
 # - drops a .desktop file into ~/.local/share/applications
 
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 PREFIX="${HOME}/.local"
-LIB_DIR="${PREFIX}/lib/piscript"
-BIN="${PREFIX}/bin/piscript"
-DESKTOP="${PREFIX}/share/applications/piscript.desktop"
+LIB_DIR="${PREFIX}/lib/dramaticpi"
+BIN="${PREFIX}/bin/dramaticpi"
+DESKTOP="${PREFIX}/share/applications/dramaticpi.desktop"
 
 echo "==> Checking apt dependencies…"
 NEEDS=()
@@ -25,21 +25,21 @@ fi
 
 echo "==> Copying package to ${LIB_DIR}"
 mkdir -p "${LIB_DIR}"
-rm -rf "${LIB_DIR}/piscript"
-cp -r "${REPO_DIR}/piscript" "${LIB_DIR}/piscript"
+rm -rf "${LIB_DIR}/dramaticpi"
+cp -r "${REPO_DIR}/dramaticpi" "${LIB_DIR}/dramaticpi"
 
 echo "==> Installing launcher: ${BIN}"
 mkdir -p "$(dirname "${BIN}")"
 cat > "${BIN}" <<EOF
 #!/usr/bin/env bash
 export PYTHONPATH="${LIB_DIR}:\${PYTHONPATH:-}"
-exec python3 -m piscript "\$@"
+exec python3 -m dramaticpi "\$@"
 EOF
 chmod +x "${BIN}"
 
 echo "==> Installing desktop entry: ${DESKTOP}"
 mkdir -p "$(dirname "${DESKTOP}")"
-cp "${REPO_DIR}/piscript.desktop" "${DESKTOP}"
+cp "${REPO_DIR}/dramaticpi.desktop" "${DESKTOP}"
 sed -i "s|@BIN@|${BIN}|g" "${DESKTOP}"
 
-echo "==> Done. Launch from your applications menu or run: piscript"
+echo "==> Done. Launch from your applications menu or run: dramaticpi"

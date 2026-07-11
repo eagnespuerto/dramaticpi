@@ -1,7 +1,7 @@
 import re
 
-from piscript.html import export_html
-from piscript.model import Block, Document, ElementType as E, Mode
+from dramaticpi.html import export_html
+from dramaticpi.model import Block, Document, ElementType as E, Mode
 from tests.fixtures import screenplay_fixture, stage_fixture
 
 

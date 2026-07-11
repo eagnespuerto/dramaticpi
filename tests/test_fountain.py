@@ -1,7 +1,7 @@
-from piscript.fountain import (
+from dramaticpi.fountain import (
     ExportResult, ImportResult, export_fountain, parse_fountain,
 )
-from piscript.model import Block, Document, ElementType as E, Mode
+from dramaticpi.model import Block, Document, ElementType as E, Mode
 
 
 def test_export_screenplay_basic():

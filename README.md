@@ -1,4 +1,4 @@
-# piscript
+# DramaticPi
 
 A lightweight word processor for stage plays and screenplays. Renders industry-standard layouts (WGA screenplay, Dramatists Guild stage) as you type. Runs on Raspberry Pi Zero W upward on Raspberry Pi OS (Bullseye or newer).
 
@@ -7,21 +7,23 @@ Python 3 + PyQt5 + ReportLab. Modelled aesthetically on Zim: thin single toolbar
 ## Install
 
 ```bash
-git clone https://github.com/<you>/piscript.git
-cd piscript
+git clone https://github.com/<you>/dramaticpi.git
+cd dramaticpi
 ./install.sh
 ```
 
 Adds:
 
 - `python3-pyqt5` and `python3-reportlab` via apt (skipped if already present)
-- `~/.local/lib/piscript` — the package
-- `~/.local/bin/piscript` — the launcher
+- `~/.local/lib/dramaticpi` — the package
+- `~/.local/bin/dramaticpi` — the launcher
 - Menu entry under Office / Word Processor
 
 ## Use
 
-Launch from the Applications menu, or run `piscript`.
+Launch from the Applications menu, or run `dramaticpi`.
+
+Scripts save with the `.dramapi` extension.
 
 **Keyboard:**
 
@@ -45,7 +47,7 @@ Launch from the Applications menu, or run `piscript`.
 - **Screenplay**: US Letter, Courier 12pt, margins L 1.5" / R 1.0" / T 1.0" / B 1.0". Elements follow WGA style-sheet indents.
 - **Stage play**: US Letter, Courier 12pt, margins 1.0" on all sides. Character names centered above dialogue, stage directions indented 3.0" and italicised.
 
-Exact numbers live in [`piscript/layout.py`](piscript/layout.py) — the single source of truth for the editor, PDF export, and HTML export.
+Exact numbers live in [`dramaticpi/layout.py`](dramaticpi/layout.py) — the single source of truth for the editor, PDF export, and HTML export.
 
 ## Requirements
 
