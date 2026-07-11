@@ -240,9 +240,74 @@ class MainWindow(QMainWindow):
                 "Imported with warnings:\n\n" + "\n".join(result.warnings)
             )
 
-    def _export_pdf(self): ...
-    def _export_html(self): ...
-    def _export_fountain(self): ...
+    def _export_pdf(self):
+        from PyQt5.QtWidgets import QFileDialog
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Export PDF", "script.pdf", "PDF (*.pdf)"
+        )
+        if not path:
+            return
+        try:
+            from .pdf import export_pdf
+        except ImportError:
+            QMessageBox.warning(
+                self, "piscript",
+                "PDF export needs ReportLab. Install with:\n"
+                "  sudo apt install python3-reportlab"
+            )
+            return
+        try:
+            export_pdf(self._current_doc(), path)
+        except OSError as e:
+            QMessageBox.critical(self, "piscript", f"Could not write PDF:\n{e}")
+            return
+        QMessageBox.information(self, "piscript", f"Exported PDF to {path}")
+
+    def _export_html(self):
+        from PyQt5.QtWidgets import QFileDialog
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Export HTML", "script.html", "HTML (*.html)"
+        )
+        if not path:
+            return
+        from .html import export_html
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(export_html(self._current_doc()))
+        except OSError as e:
+            QMessageBox.critical(self, "piscript", f"Could not write HTML:\n{e}")
+            return
+        QMessageBox.information(self, "piscript", f"Exported HTML to {path}")
+
+    def _export_fountain(self):
+        from PyQt5.QtWidgets import QFileDialog
+        from .fountain import export_fountain
+        doc = self._current_doc()
+
+        result = export_fountain(doc)
+        if result.warnings:
+            r = QMessageBox.question(
+                self, "piscript",
+                "This export is lossy:\n\n"
+                + "\n".join(result.warnings)
+                + "\n\nContinue?",
+                QMessageBox.Yes | QMessageBox.No,
+            )
+            if r != QMessageBox.Yes:
+                return
+
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Export Fountain", "script.fountain", "Fountain (*.fountain)"
+        )
+        if not path:
+            return
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(result.text)
+        except OSError as e:
+            QMessageBox.critical(self, "piscript", f"Could not write Fountain:\n{e}")
+            return
+        QMessageBox.information(self, "piscript", f"Exported Fountain to {path}")
 
     def _about(self):
         QMessageBox.about(
